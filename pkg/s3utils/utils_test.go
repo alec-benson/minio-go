@@ -55,6 +55,10 @@ func TestGetRegionFromURL(t *testing.T) {
 			expectedRegion: "us-gov-west-1",
 		},
 		{
+			u:              url.URL{Host: "s3-fips.us-gov-west-1.amazonaws.com"},
+			expectedRegion: "us-gov-west-1",
+		},
+		{
 			u:              url.URL{Host: "s3-us-gov-west-1.amazonaws.com"},
 			expectedRegion: "us-gov-west-1",
 		},
@@ -98,6 +102,18 @@ func TestGetRegionFromURL(t *testing.T) {
 			u: url.URL{
 				Host: "s3.kubernetesfrontendlb-caf78da2b1f7516c.elb.amazonaws.com.cn",
 			},
+		},
+		{
+			u: url.URL{
+				Host: "bucket.vpce-1a2b3c4d-5e6f.s3.us-east-1.vpce.amazonaws.com",
+			},
+			expectedRegion: "us-east-1",
+		},
+		{
+			u: url.URL{
+				Host: "accesspoint.vpce-1a2b3c4d-5e6f.s3.us-east-1.vpce.amazonaws.com",
+			},
+			expectedRegion: "us-east-1",
 		},
 	}
 
@@ -219,6 +235,8 @@ func TestIsAmazonEndpoint(t *testing.T) {
 		{"https://s3-us-west-1.amazonaws.com", true},
 		{"https://s3.us-west-1.amazonaws.com", true},
 		{"https://s3.dualstack.us-west-1.amazonaws.com", true},
+		{"https://bucket.vpce-1a2b3c4d-5e6f.s3.us-east-1.vpce.amazonaws.com", true},
+		{"https://accesspoint.vpce-1a2b3c4d-5e6f.s3.us-east-1.vpce.amazonaws.com", true},
 	}
 
 	for i, testCase := range testCases {

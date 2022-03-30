@@ -1,4 +1,5 @@
-// +build ignore
+//go:build example
+// +build example
 
 /*
  * MinIO Go Library for Amazon S3 Compatible Cloud Storage

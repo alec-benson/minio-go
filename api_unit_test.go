@@ -99,11 +99,11 @@ func TestBucketPolicyTypes(t *testing.T) {
 
 // Tests optimal part size.
 func TestPartSize(t *testing.T) {
-	_, _, _, err := optimalPartInfo(5000000000000000000, minPartSize)
+	_, _, _, err := OptimalPartInfo(5000000000000000000, minPartSize)
 	if err == nil {
 		t.Fatal("Error: should fail")
 	}
-	totalPartsCount, partSize, lastPartSize, err := optimalPartInfo(5243928576, 5*1024*1024)
+	totalPartsCount, partSize, lastPartSize, err := OptimalPartInfo(5243928576, 5*1024*1024)
 	if err != nil {
 		t.Fatal("Error: ", err)
 	}
@@ -116,20 +116,20 @@ func TestPartSize(t *testing.T) {
 	if lastPartSize != 1048576 {
 		t.Fatalf("Error: expecting last part size of 1048576: got %v instead", lastPartSize)
 	}
-	totalPartsCount, partSize, lastPartSize, err = optimalPartInfo(5243928576, 0)
+	totalPartsCount, partSize, lastPartSize, err = OptimalPartInfo(5243928576, 0)
 	if err != nil {
 		t.Fatal("Error: ", err)
 	}
-	if totalPartsCount != 40 {
-		t.Fatalf("Error: expecting total parts count of 40: got %v instead", totalPartsCount)
+	if totalPartsCount != 313 {
+		t.Fatalf("Error: expecting total parts count of 313: got %v instead", totalPartsCount)
 	}
-	if partSize != 134217728 {
-		t.Fatalf("Error: expecting part size of 134217728: got %v instead", partSize)
+	if partSize != 16777216 {
+		t.Fatalf("Error: expecting part size of 16777216: got %v instead", partSize)
 	}
 	if lastPartSize != 9437184 {
 		t.Fatalf("Error: expecting last part size of 9437184: got %v instead", lastPartSize)
 	}
-	_, partSize, _, err = optimalPartInfo(5000000000, minPartSize)
+	_, partSize, _, err = OptimalPartInfo(5000000000, minPartSize)
 	if err != nil {
 		t.Fatal("Error:", err)
 	}
@@ -137,21 +137,21 @@ func TestPartSize(t *testing.T) {
 		t.Fatalf("Error: expecting part size of %v: got %v instead", minPartSize, partSize)
 	}
 	// if stream and using default optimal part size determined by sdk
-	totalPartsCount, partSize, lastPartSize, err = optimalPartInfo(-1, 0)
+	totalPartsCount, partSize, lastPartSize, err = OptimalPartInfo(-1, 0)
 	if err != nil {
 		t.Fatal("Error:", err)
 	}
-	if totalPartsCount != 8192 {
-		t.Fatalf("Error: expecting total parts count of 8192: got %v instead", totalPartsCount)
+	if totalPartsCount != 9930 {
+		t.Fatalf("Error: expecting total parts count of 9930: got %v instead", totalPartsCount)
 	}
-	if partSize != 671088640 {
-		t.Fatalf("Error: expecting part size of 671088640: got %v instead", partSize)
+	if partSize != 553648128 {
+		t.Fatalf("Error: expecting part size of 553648128: got %v instead", partSize)
 	}
-	if lastPartSize != 671088640 {
-		t.Fatalf("Error: expecting last part size of 671088640: got %v instead", lastPartSize)
+	if lastPartSize != 385875968 {
+		t.Fatalf("Error: expecting last part size of 385875968: got %v instead", lastPartSize)
 	}
 
-	totalPartsCount, partSize, lastPartSize, err = optimalPartInfo(-1, 64*1024*1024)
+	totalPartsCount, partSize, lastPartSize, err = OptimalPartInfo(-1, 64*1024*1024)
 	if err != nil {
 		t.Fatal("Error:", err)
 	}
@@ -196,6 +196,8 @@ func TestMakeTargetURL(t *testing.T) {
 		{"localhost:80", false, "mybucket", "myobject", "", nil, url.URL{Host: "localhost", Scheme: "http", Path: "/mybucket/myobject"}, nil},
 		// Test 9, testing with port 443
 		{"localhost:443", true, "mybucket", "myobject", "", nil, url.URL{Host: "localhost", Scheme: "https", Path: "/mybucket/myobject"}, nil},
+		{"[240b:c0e0:102:54C0:1c05:c2c1:19:5001]:443", true, "mybucket", "myobject", "", nil, url.URL{Host: "[240b:c0e0:102:54C0:1c05:c2c1:19:5001]", Scheme: "https", Path: "/mybucket/myobject"}, nil},
+		{"[240b:c0e0:102:54C0:1c05:c2c1:19:5001]:9000", true, "mybucket", "myobject", "", nil, url.URL{Host: "[240b:c0e0:102:54C0:1c05:c2c1:19:5001]:9000", Scheme: "https", Path: "/mybucket/myobject"}, nil},
 	}
 
 	for i, testCase := range testCases {

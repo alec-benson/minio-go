@@ -20,7 +20,6 @@ package minio
 import (
 	"bytes"
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -38,31 +37,6 @@ const (
 	secretKey      = "SECRET_KEY"
 	enableSecurity = "ENABLE_HTTPS"
 )
-
-const letterBytes = "abcdefghijklmnopqrstuvwxyz01234569"
-const (
-	letterIdxBits = 6                    // 6 bits to represent a letter index
-	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-// randString generates random names and prepends them with a known prefix.
-func randString(n int, src rand.Source, prefix string) string {
-	b := make([]byte, n)
-	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
-	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = src.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
-	}
-	return prefix + string(b[0:30-len(prefix)])
-}
 
 // Tests for Core GetObject() function.
 func TestGetObjectCore(t *testing.T) {
@@ -610,7 +584,7 @@ func TestCoreCopyObjectPart(t *testing.T) {
 	}
 
 	// Complete the multipart upload
-	_, err = c.CompleteMultipartUpload(context.Background(), destBucketName, destObjectName, uploadID, []CompletePart{fstPart, sndPart, lstPart})
+	_, err = c.CompleteMultipartUpload(context.Background(), destBucketName, destObjectName, uploadID, []CompletePart{fstPart, sndPart, lstPart}, PutObjectOptions{})
 	if err != nil {
 		t.Fatal("Error:", err, destBucketName, destObjectName)
 	}
@@ -802,17 +776,17 @@ func TestCoreGetObjectMetadata(t *testing.T) {
 	_, err = core.PutObject(context.Background(), bucketName, "my-objectname",
 		bytes.NewReader([]byte("hello")), 5, "", "", putopts)
 	if err != nil {
-		log.Fatalln(err)
+		t.Fatal(err)
 	}
 
 	reader, objInfo, _, err := core.GetObject(context.Background(), bucketName, "my-objectname", GetObjectOptions{})
 	if err != nil {
-		log.Fatalln(err)
+		t.Fatal(err)
 	}
-	defer reader.Close()
+	reader.Close()
 
 	if objInfo.Metadata.Get("X-Amz-Meta-Key-1") != "Val-1" {
-		log.Fatalln("Expected metadata to be available but wasn't")
+		t.Fatal("Expected metadata to be available but wasn't")
 	}
 
 	err = core.RemoveObject(context.Background(), bucketName, "my-objectname", RemoveObjectOptions{})
